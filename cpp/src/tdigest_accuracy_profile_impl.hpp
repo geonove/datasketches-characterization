@@ -44,42 +44,50 @@ void tdigest_accuracy_profile<T>::run() {
   const uint16_t compression = 200;
   const std::vector<double> ranks = {0.01, 0.05, 0.5, 0.95, 0.99};
 
+  // Note: errors are multiplied by 100 below, so these are percentages.
   std::cout << "N";
-  for (const double rank: ranks) std::cout << "\terr at " << rank;
+  for (const double rank: ranks) std::cout << "\trel err (%) at " << rank;
   std::cout << "\n";
 
   const unsigned num_steps = count_points(lg_min, lg_max, ppo);
   std::vector<std::vector<double>> rank_errors(ranks.size(), std::vector<double>(num_trials, 0));
   unsigned stream_length = 1;
 
+  std::atomic<unsigned> counter(0);
   for (unsigned i = 0; i < num_steps; ++i) {
-    // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for
     for (unsigned t = 0; t < num_trials; t++) {
       std::random_device rd;
       std::mt19937 gen( rd());
       //  std::uniform_real_distribution<T> dist(0, 1.0);
-      std::exponential_distribution<T> dist(1.5);
+      std::exponential_distribution<> dist(1.5);
 
       std::vector<T> values(stream_length);
       for (size_t j = 0; j < stream_length; ++j) {
         values[j] = dist(gen);
+        if (!std::isfinite(values[j])) {
+          ++counter;
+        }
       }
+
       run_trial(values, stream_length, compression, ranks, rank_errors, t);
     }
+    std::cout << "infs\t" << counter << "\n";
 
     std::cout << stream_length;
 
     for (auto& errors: rank_errors) {
       std::sort(errors.begin(), errors.end());
       const double rank_error = errors[error_pct_index];
-      std::cout << "\t" << rank_error * 100;
+      std::cout << "\t" << rank_error;
     }
     std::cout << "\n";
 
     stream_length = pwr_2_law_next(ppo, stream_length);
-    // std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
   }
 }
 
