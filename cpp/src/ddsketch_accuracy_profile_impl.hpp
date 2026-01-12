@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
-#include <chrono>
 
 #include "ddsketch_accuracy_profile.hpp"
 
@@ -53,7 +52,6 @@ void ddsketch_accuracy_profile<T>::run() {
   std::vector<std::vector<double>> quantile_errors(levels.size(), std::vector<double>(num_trials, 0));
   unsigned stream_length = 1;
 
-  std::atomic<unsigned> counter(0);
   for (unsigned i = 0; i < num_steps; ++i) {
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for
