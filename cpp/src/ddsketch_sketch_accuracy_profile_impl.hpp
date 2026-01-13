@@ -28,7 +28,7 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   // tdigest<double> sketch(100);
   // tdigest<double> sketch(200);
   // req_sketch<double> sketch(10, true);
-  req_sketch<double> sketch(40, true);
+  req_sketch<double> sketch(10, false);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);

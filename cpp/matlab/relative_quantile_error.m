@@ -23,8 +23,12 @@ td100=load("../results/tdigest_100_rel_q_acc.tsv");
 td200=load("../results/tdigest_200_rel_q_acc.tsv");
 req10_hra=load("../results/req_sketch_10_HRA_rel_q_acc.tsv");
 req40_hra=load("../results/req_sketch_40_HRA_rel_q_acc.tsv");
-hold on;
+req10_lra=load("../results/req_sketch_10_LRA_rel_q_acc.tsv");
+req40_lra=load("../results/req_sketch_40_LRA_rel_q_acc.tsv");
 
+#p0.99
+figure(1);
+hold on;
 loglog(ddsketch_clds(:,1), ddsketch_clds(:,6), 'linewidth', 2);
 loglog(ddsketch_chds(:,1), ddsketch_chds(:,6), 'linewidth', 2);
 loglog(td100(:,1), td100(:,6), 'linewidth', 2);
@@ -46,5 +50,58 @@ legend(
 'REQ - HRA, k=40, rank 0.99',
 'location', 'northwest'
 );
+
+#p0.01
+%hold on;
+figure(2);
+hold on;
+semilogx(ddsketch_clds(:,1), ddsketch_clds(:,2), 'linewidth', 2);
+semilogx(ddsketch_chds(:,1), ddsketch_chds(:,2), 'linewidth', 2);
+semilogx(td100(:,1), td100(:,2), 'linewidth', 2);
+semilogx(td200(:,1), td200(:,2), 'linewidth', 2);
+semilogx(req10_lra(:,1), req10_lra(:,2), 'linewidth', 2);
+semilogx(req40_lra(:,1), req40_lra(:,2), 'linewidth', 2);
+
+set(gca, 'fontsize', 16);
+title 'Relative Quantile Error of TDigest and DDSketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
+xlabel 'stream size'
+ylabel 'relative quantile error |true - esimate| / estimate'
+grid minor on
+legend(
+'DDSketch - Collapsing Lowest Buckets, alpha=0.01, rank 0.01',
+'DDSketch - Collapsing Highest Buckets, alpha=0.01, rank 0.01',
+'tdigest, k=100, rank 0.01',
+'tdigest, k=200, rank 0.01',
+'REQ - LRA, k=10, rank 0.01',
+'REQ - LRA, k=40, rank 0.01',
+'location', 'northwest'
+);
+
+#p0.5
+%hold on;
+figure(3);
+hold on;
+loglog(ddsketch_clds(:,1), ddsketch_clds(:,4), 'linewidth', 2);
+loglog(ddsketch_chds(:,1), ddsketch_chds(:,4), 'linewidth', 2);
+loglog(td100(:,1), td100(:,4), 'linewidth', 2);
+loglog(td200(:,1), td200(:,4), 'linewidth', 2);
+loglog(req10_lra(:,1), req10_lra(:,4), 'linewidth', 2);
+loglog(req40_lra(:,1), req40_lra(:,4), 'linewidth', 2);
+
+set(gca, 'fontsize', 16);
+title 'Relative Quantile Error of TDigest and DDSketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
+xlabel 'stream size'
+ylabel 'relative quantile error |true - esimate| / estimate'
+grid minor on
+legend(
+'DDSketch - Collapsing Lowest Buckets, alpha=0.01, rank 0.5',
+'DDSketch - Collapsing Highest Buckets, alpha=0.01, rank 0.5',
+'tdigest, k=100, rank 0.5',
+'tdigest, k=200, rank 0.5',
+'REQ - LRA, k=10, rank 0.5',
+'REQ - LRA, k=40, rank 0.5',
+'location', 'northwest'
+);
+
 
 pause;
