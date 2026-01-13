@@ -80,7 +80,7 @@ void ddsketch_accuracy_profile<T>::run() {
 
     stream_length = pwr_2_law_next(ppo, stream_length);
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
   }
 }
 

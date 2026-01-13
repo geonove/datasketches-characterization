@@ -8,8 +8,13 @@
 #include "ddsketch_sketch_accuracy_profile.hpp"
 #include "ddsketch.hpp"
 #include "collapsing_highest_dense_store.hpp"
+#include "collapsing_lowest_dense_store.hpp"
 #include "logarithmic_mapping.hpp"
 #include "true_rank.hpp"
+
+#include "tdigest.hpp"
+#include "req_sketch.hpp"
+
 
 namespace datasketches {
 template<typename T>
@@ -18,7 +23,12 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   const std::vector<double>& ranks,
   std::vector<std::vector<double>>& errors, const size_t t) {
 
-  DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
+  // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
+  // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
+  // tdigest<double> sketch(100);
+  // tdigest<double> sketch(200);
+  // req_sketch<double> sketch(10, true);
+  req_sketch<double> sketch(40, true);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);
