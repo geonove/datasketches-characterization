@@ -17,14 +17,14 @@
 
 clf;
 
-ddsketch_clds=load('../results/ddsketch_clds_2048_001_rel_q_acc.tsv');
-ddsketch_chds=load('../results/ddsketch_chds_2048_001_rel_q_acc.tsv');
-td100=load("../results/tdigest_100_rel_q_acc.tsv");
-td200=load("../results/tdigest_200_rel_q_acc.tsv");
-req10_hra=load("../results/req_sketch_10_HRA_rel_q_acc.tsv");
-req40_hra=load("../results/req_sketch_40_HRA_rel_q_acc.tsv");
-req10_lra=load("../results/req_sketch_10_LRA_rel_q_acc.tsv");
-req40_lra=load("../results/req_sketch_40_LRA_rel_q_acc.tsv");
+ddsketch_clds=load('../results/ddsketch_clds_2048_001_rel_rank_error.tsv');
+ddsketch_chds=load('../results/ddsketch_chds_2048_001_rel_rank_error.tsv');
+td100=load("../results/tdigest_100_rel_rank_error.tsv");
+td200=load("../results/tdigest_200_rel_rank_error.tsv");
+req10_hra=load("../results/req_sketch_10_HRA_rel_rank_error.tsv");
+req40_hra=load("../results/req_sketch_40_HRA_rel_rank_error.tsv");
+req10_lra=load("../results/req_sketch_10_LRA_rel_rank_error.tsv");
+req40_lra=load("../results/req_sketch_40_LRA_rel_rank_error.tsv");
 
 #p0.99
 figure(1);
@@ -37,9 +37,9 @@ loglog(req10_hra(:,1), req10_hra(:,6), 'linewidth', 2);
 loglog(req40_hra(:,1), req40_hra(:,6), 'linewidth', 2);
 
 set(gca, 'fontsize', 16);
-title 'Relative Quantile Error of DDSketch, TDigest and REQ sketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
+title 'Rank Error of TDigest, REQ sketch and DDSketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
 xlabel 'stream size'
-ylabel 'relative quantile error |true - esimate| / estimate'
+ylabel 'relative quantile error |true - esimate| / estimate, %'
 grid minor on
 legend(
 'DDSketch - Collapsing Lowest Buckets, alpha=0.01, rank 0.99',
@@ -55,15 +55,15 @@ legend(
 %hold on;
 figure(2);
 hold on;
-semilogx(ddsketch_clds(:,1), ddsketch_clds(:,2), 'linewidth', 2);
-semilogx(ddsketch_chds(:,1), ddsketch_chds(:,2), 'linewidth', 2);
-semilogx(td100(:,1), td100(:,2), 'linewidth', 2);
-semilogx(td200(:,1), td200(:,2), 'linewidth', 2);
-semilogx(req10_lra(:,1), req10_lra(:,2), 'linewidth', 2);
-semilogx(req40_lra(:,1), req40_lra(:,2), 'linewidth', 2);
+loglog(ddsketch_clds(:,1), ddsketch_clds(:,2), 'linewidth', 2);
+loglog(ddsketch_chds(:,1), ddsketch_chds(:,2), 'linewidth', 2);
+loglog(td100(:,1), td100(:,2), 'linewidth', 2);
+loglog(td200(:,1), td200(:,2), 'linewidth', 2);
+loglog(req10_lra(:,1), req10_lra(:,2), 'linewidth', 2);
+loglog(req40_lra(:,1), req40_lra(:,2), 'linewidth', 2);
 
 set(gca, 'fontsize', 16);
-title 'Relative Quantile Error of DDSketch, TDigest and REQ sketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
+title 'Relative Quantile Error of TDigest and DDSketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
 xlabel 'stream size'
 ylabel 'relative quantile error |true - esimate| / estimate'
 grid minor on
@@ -74,7 +74,7 @@ legend(
 'tdigest, k=200, rank 0.01',
 'REQ - LRA, k=10, rank 0.01',
 'REQ - LRA, k=40, rank 0.01',
-'location', 'northeast'
+'location', 'northwest'
 );
 
 #p0.5
@@ -85,11 +85,11 @@ loglog(ddsketch_clds(:,1), ddsketch_clds(:,4), 'linewidth', 2);
 loglog(ddsketch_chds(:,1), ddsketch_chds(:,4), 'linewidth', 2);
 loglog(td100(:,1), td100(:,4), 'linewidth', 2);
 loglog(td200(:,1), td200(:,4), 'linewidth', 2);
-loglog(req10_lra(:,1), req10_lra(:,4), 'linewidth', 2);
+loglog(req40_hra(:,1), req40_hra(:,4), 'linewidth', 2);
 loglog(req40_lra(:,1), req40_lra(:,4), 'linewidth', 2);
 
 set(gca, 'fontsize', 16);
-title 'Relative Quantile Error of DDSketch, TDigest and REQ sketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
+title 'Relative Quantile Error of TDigest and DDSketch, exponential distribution lambda=1.5, 1000 trials 99 pct'
 xlabel 'stream size'
 ylabel 'relative quantile error |true - esimate| / estimate'
 grid minor on
@@ -98,10 +98,9 @@ legend(
 'DDSketch - Collapsing Highest Buckets, alpha=0.01, rank 0.5',
 'tdigest, k=100, rank 0.5',
 'tdigest, k=200, rank 0.5',
-'REQ - LRA, k=10, rank 0.5',
+'REQ - HRA, k=40, rank 0.5',
 'REQ - LRA, k=40, rank 0.5',
-'location', 'northeast'
+'location', 'northwest'
 );
 
-
-pause;
+pause();
