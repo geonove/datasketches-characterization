@@ -22,6 +22,9 @@
 
 #include <tdigest.hpp>
 #include <req_sketch.hpp>
+#include <ddsketch.hpp>
+#include <collapsing_lowest_dense_store.hpp>
+#include <logarithmic_mapping.hpp>
 
 #include "counting_allocator.hpp"
 
@@ -41,9 +44,11 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
 //  using tdigest_t = tdigest<T, counting_allocator<T>>;
 //  tdigest_t* td = new (counting_allocator<tdigest_t>().allocate(1)) tdigest_t(k);
 
-  using req_sketch_t = req_sketch<T, std::less<T>, counting_allocator<T>>;
-  req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(k);
+  // using req_sketch_t = req_sketch<T, std::less<T>, counting_allocator<T>>;
+  // req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(k);
 
+  using ddsketch_t = DDSketch<CollapsingLowestDenseStore<2048, counting_allocator<T>>, LogarithmicMapping>;
+  ddsketch_t* s = new (counting_allocator<ddsketch_t>().allocate(1)) ddsketch_t(0.01);
   size_t count = 0;
   size_t p = 1ULL << lg_min_x;
   for (size_t i = 0; i < num_points; ++i) {
@@ -61,8 +66,11 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
 
 //  td->~tdigest_t();
 //  counting_allocator<tdigest_t>().deallocate(td, 1);
-  s->~req_sketch_t();
-  counting_allocator<req_sketch_t>().deallocate(s, 1);
+  // s->~req_sketch_t();
+  // counting_allocator<ss>().deallocate(s, 1);
+
+  s->~ddsketch_t();
+  counting_allocator<ddsketch_t>().deallocate(s, 1);
   if (total_allocated_memory != 0) throw std::runtime_error("total_allocated_memory != 0");
 }
 
