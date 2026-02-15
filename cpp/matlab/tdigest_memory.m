@@ -27,6 +27,8 @@ req20_flt=load('../results/req_sketch_memory_float_k20.tsv');
 req30_flt=load('../results/req_sketch_memory_float_k30.tsv');
 req40_flt=load('../results/req_sketch_memory_float_k40.tsv');
 
+ddsketch=load('../results/ddsketch_clds_2048_001_memory.tsv');
+
 hold on;
 
 semilogx(td100_flt(:,1), td100_flt(:,11), 'linewidth', 2);
@@ -36,6 +38,8 @@ semilogx(req10_flt(:,1), req10_flt(:,11), 'linewidth', 2);
 semilogx(req20_flt(:,1), req20_flt(:,11), 'linewidth', 2);
 semilogx(req30_flt(:,1), req30_flt(:,11), 'linewidth', 2);
 semilogx(req40_flt(:,1), req40_flt(:,11), 'linewidth', 2);
+
+semilogx(ddsketch(:,1), ddsketch(:,11), 'linewidth', 2);
 
 set(gca, 'fontsize', 16);
 title 'Memory usage TDigest vs REQ sketch (updates, no transients, C++)'
@@ -49,5 +53,8 @@ legend(
 'req\_sketch<float> k=20',
 'req\_sketch<float> k=30',
 'req\_sketch<float> k=40',
+'ddsketch CLDS 2048, alpha=0.01',
 'location', 'northwest'
 );
+
+pause;

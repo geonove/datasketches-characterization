@@ -31,6 +31,8 @@ void tdigest_sketch_accuracy_profile<T>::run_trial(std::vector<T>& values, size_
     const std::vector<double>& ranks, std::vector<std::vector<double>>& rank_errors, const size_t t) {
 
   tdigest<T> sketch(k);
+  // req_sketch<T> sketch(12);
+  // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);

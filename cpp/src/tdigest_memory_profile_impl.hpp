@@ -47,7 +47,7 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
   // using req_sketch_t = req_sketch<T, std::less<T>, counting_allocator<T>>;
   // req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(k);
 
-  using ddsketch_t = DDSketch<CollapsingLowestDenseStore<2048, counting_allocator<T>>, LogarithmicMapping>;
+  using ddsketch_t = DDSketch<CollapsingLowestDenseStore<2048, counting_allocator<double>>, LogarithmicMapping>;
   ddsketch_t* s = new (counting_allocator<ddsketch_t>().allocate(1)) ddsketch_t(0.01);
   size_t count = 0;
   size_t p = 1ULL << lg_min_x;

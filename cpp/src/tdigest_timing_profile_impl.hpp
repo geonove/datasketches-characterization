@@ -23,11 +23,16 @@
 #include <iostream>
 #include <algorithm>
 #include <chrono>
+#include <atomic>
 #include <sstream>
+#include <vector>
+#include <omp.h>
 
 #include <tdigest.hpp>
 #include <req_sketch.hpp>
-
+#include <ddsketch.hpp>
+#include <collapsing_lowest_dense_store.hpp>
+#include <logarithmic_mapping.hpp>
 namespace datasketches {
 
 template<typename T>
@@ -51,49 +56,60 @@ void tdigest_timing_profile<T>::run() {
 
   std::cout << "Stream\tTrials\tBuild\tUpdate\tRank" << std::endl;
 
-  std::vector<T> values(1ULL << lg_max_stream_len, 0);
+  // std::vector<T> values(1ULL << lg_max_stream_len, 0);
 
   std::vector<T> rank_query_values(num_queries, 0);
   for (size_t i = 0; i < num_queries; i++) rank_query_values[i] = sample();
 
   size_t stream_length(1 << lg_min_stream_len);
   while (stream_length <= (1 << lg_max_stream_len)) {
-
-    std::chrono::nanoseconds build_time_ns(0);
-    std::chrono::nanoseconds update_time_ns(0);
-    std::chrono::nanoseconds get_rank_time_ns(0);
-    size_t size_bytes = 0;
+    long long build_sum = 0;
+    long long update_sum = 0;
+    size_t size_bytes_sum = 0;
 
     const size_t num_trials = get_num_trials(stream_length, lg_min_stream_len, lg_max_stream_len, lg_min_trials, lg_max_trials);
-    for (size_t t = 0; t < num_trials; ++t) {
-      std::generate(values.begin(), values.begin() + stream_length, [this] { return this->sample(); });
+    auto start = std::chrono::high_resolution_clock::now();
+    const uint64_t seed_base = static_cast<uint64_t>(start.time_since_epoch().count());
+    #pragma omp parallel reduction(+:build_sum, update_sum, size_bytes_sum)
+    {
+      std::mt19937 rng(seed_base + static_cast<uint64_t>(omp_get_thread_num()));
+      std::exponential_distribution<> dist(1.5);
+      std::vector<T> values(stream_length);
+      #pragma omp for
+      for (size_t t = 0; t < num_trials; ++t) {
+        std::generate(values.begin(), values.end(), [&] { return dist(rng); });
 
-      auto start_build(std::chrono::high_resolution_clock::now());
-      tdigest<T> sketch(k);
-//      req_sketch<T> sketch(40);
-      auto finish_build(std::chrono::high_resolution_clock::now());
-      build_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_build - start_build);
+        auto start_build(std::chrono::high_resolution_clock::now());
+        // tdigest<T> sketch(k);
+        // req_sketch<T> sketch(40);
+        DDSketch<CollapsingLowestDenseStore<128, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
+        auto finish_build(std::chrono::high_resolution_clock::now());
+        build_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_build - start_build).count();
 
-      auto start_update(std::chrono::high_resolution_clock::now());
-      for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
-      auto finish_update(std::chrono::high_resolution_clock::now());
-      update_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_update - start_update);
+        auto start_update(std::chrono::high_resolution_clock::now());
+        for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
+        auto finish_update(std::chrono::high_resolution_clock::now());
+        update_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_update - start_update).count();
 
-//      auto start_get_rank(std::chrono::high_resolution_clock::now());
-//      for (size_t i = 0; i < num_queries; i++) {
-//        volatile double rank = sketch.get_rank(rank_query_values[i]); // volatile to prevent this from being optimized away
-//      }
-//      auto finish_get_rank(std::chrono::high_resolution_clock::now());
-//      get_rank_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_get_rank - start_get_rank);
+//        auto start_get_rank(std::chrono::high_resolution_clock::now());
+//        for (size_t i = 0; i < num_queries; i++) {
+//          volatile double rank = sketch.get_rank(rank_query_values[i]); // volatile to prevent this from being optimized away
+//        }
+//        auto finish_get_rank(std::chrono::high_resolution_clock::now());
+//        get_rank_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_get_rank - start_get_rank);
 
-      size_bytes += sketch.get_serialized_size_bytes();
+        size_bytes_sum += sketch.get_serialized_size_bytes();
+      }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    // std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << std::endl;
     std::cout << stream_length << "\t"
         << num_trials << "\t"
-        << (double) build_time_ns.count() / num_trials << "\t"
-        << (double) update_time_ns.count() / num_trials / stream_length << "\t"
+        // << (double) build_time_ns.count() / num_trials << "-\t"
+        << (double) build_sum / num_trials << "\t"
+        << (double) update_sum / num_trials / stream_length << "\t"
 //        << (double) get_rank_time_ns.count() / num_trials / num_queries << "\t"
-        << (double) size_bytes / num_trials << "\n";
+        << (double) size_bytes_sum / num_trials << "\n";
 
     stream_length = pwr_2_law_next(ppo, stream_length);
   }
