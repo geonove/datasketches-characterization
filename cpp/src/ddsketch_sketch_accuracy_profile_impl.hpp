@@ -23,12 +23,19 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   const std::vector<double>& ranks,
   std::vector<std::vector<double>>& errors, const size_t t) {
 
+  // === Sketch: uncomment ONE ===
+  // tdigest (k=100)
+  // tdigest<T> sketch(100);
+  // tdigest (k=200)
+  // tdigest<T> sketch(200);
+  // req_sketch (HRA, k=12)
+  // req_sketch<T> sketch(12, true);
+  // req_sketch (LRA, k=12)
+  // req_sketch<T> sketch(12, false);
+  // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
+  DDSketch<CollapsingLowestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
+  // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
   // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
-  // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
-  // tdigest<double> sketch(100);
-  // tdigest<double> sketch(200);
-  // req_sketch<double> sketch(10, true);
-  req_sketch<double> sketch(10, false);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);
