@@ -28,8 +28,10 @@
 #include <omp.h>
 
 #include <tdigest.hpp>
+#include <req_sketch.hpp>
 #include <ddsketch.hpp>
 #include <collapsing_lowest_dense_store.hpp>
+#include <collapsing_highest_dense_store.hpp>
 #include <logarithmic_mapping.hpp>
 namespace datasketches {
 
@@ -50,9 +52,24 @@ void tdigest_merge_timing_profile<T>::run() {
 
   const size_t num_sketches(32);
 
-  std::cout << "Stream\tTrials\tBuild\tUpdate\tMerge\tSize" << std::endl;
+  // === Sketch type: uncomment ONE block ===
+  // tdigest (k=200)
+  using sketch_t = tdigest<T>;
+  auto make_sketch = []() { return sketch_t(200); };
+  // req_sketch (HRA, k=30)
+  // using sketch_t = req_sketch<T>;
+  // auto make_sketch = []() { return sketch_t(30, true); };
+  // req_sketch (LRA, k=30)
+  // using sketch_t = req_sketch<T>;
+  // auto make_sketch = []() { return sketch_t(30, false); };
+  // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
+  // using sketch_t = DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>;
+  // auto make_sketch = []() { return sketch_t(0.01); };
+  // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
+  // using sketch_t = DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>;
+  // auto make_sketch = []() { return sketch_t(0.01); };
 
-  std::vector<T> values(1ULL << lg_max_stream_len, 0);
+  std::cout << "Stream\tTrials\tBuild\tUpdate\tMerge\tSize" << std::endl;
 
   size_t stream_length(1 << lg_min_stream_len);
   while (stream_length <= (1 << lg_max_stream_len)) {
@@ -63,21 +80,28 @@ void tdigest_merge_timing_profile<T>::run() {
     size_t size_bytes_sum = 0;
 
     const size_t num_trials = get_num_trials(stream_length, lg_min_stream_len, lg_max_stream_len, lg_min_trials, lg_max_trials);
-    auto start = std::chrono::high_resolution_clock::now();
-    const uint64_t seed_base = static_cast<uint64_t>(start.time_since_epoch().count());
+    const uint64_t seed_base = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     #pragma omp parallel reduction(+:build_sum, update_sum, merge_sum, size_bytes_sum)
     {
       std::mt19937 rng(seed_base + static_cast<uint64_t>(omp_get_thread_num()));
-      std::uniform_real_distribution<T> dist(0.0, 1.0);
+
+      // === Distribution: uncomment ONE ===
+      // Uniform(0, 1)
+      // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(rng); };
+      // Exponential(lambda=1.5)
+      auto sample = [&rng]() { static thread_local std::exponential_distribution<T> d(1.5); return d(rng); };
+      // Pareto(alpha=1.5, x_m=1.0)
+      // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(rng), -1.0 / 1.5); };
+
       std::vector<T> local_values(stream_length);
       #pragma omp for
       for (size_t t = 0; t < num_trials; ++t) {
-        std::generate(local_values.begin(), local_values.end(), [&] { return dist(rng); });
+        std::generate(local_values.begin(), local_values.end(), [&] { return sample(); });
 
         auto start_build(std::chrono::high_resolution_clock::now());
-        std::vector<DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>> sketches;
+        std::vector<sketch_t> sketches;
         sketches.reserve(num_sketches);
-        for (size_t i = 0; i < num_sketches; ++i) sketches.emplace_back(0.01);
+        for (size_t i = 0; i < num_sketches; ++i) sketches.push_back(make_sketch());
         auto finish_build(std::chrono::high_resolution_clock::now());
         build_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_build - start_build).count();
 
@@ -92,8 +116,11 @@ void tdigest_merge_timing_profile<T>::run() {
         update_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_update - start_update).count();
 
         auto start_merge(std::chrono::high_resolution_clock::now());
-        DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> merge_sketch(0.01);
+        sketch_t merge_sketch = make_sketch();
+        // For tdigest / DDSketch:
         for (size_t i = 0; i < num_sketches; ++i) merge_sketch.merge(sketches[i]);
+        // For req_sketch (needs move):
+        // for (size_t i = 0; i < num_sketches; ++i) merge_sketch.merge(std::move(sketches[i]));
         auto finish_merge(std::chrono::high_resolution_clock::now());
         merge_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_merge - start_merge).count();
 

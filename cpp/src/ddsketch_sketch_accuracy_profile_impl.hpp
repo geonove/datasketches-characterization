@@ -28,10 +28,10 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   // tdigest<T> sketch(100);
   // tdigest (k=200)
   // tdigest<T> sketch(200);
-  // req_sketch (HRA, k=12)
-  // req_sketch<T> sketch(12, true);
-  // req_sketch (LRA, k=12)
-  // req_sketch<T> sketch(12, false);
+  // req_sketch (HRA, k=30)
+  // req_sketch<T> sketch(30, true);
+  // req_sketch (LRA, k=30)
+  // req_sketch<T> sketch(30, false);
   // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
   DDSketch<CollapsingLowestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)

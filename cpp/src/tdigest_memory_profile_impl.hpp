@@ -39,7 +39,15 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
   total_allocated_memory = 0;
 
   thread_local std::mt19937 gen(std::random_device{}());
-  std::uniform_real_distribution<T> dist(0, 1.0);
+  auto& gen_ref = gen; // local ref so lambda can capture it
+
+  // === Distribution: uncomment ONE ===
+  // Uniform(0, 1)
+  // auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(gen_ref); };
+  // Exponential(lambda=1.5)
+  auto sample = [&gen_ref]() { static thread_local std::exponential_distribution<T> d(1.5); return d(gen_ref); };
+  // Pareto(alpha=1.5, x_m=1.0)
+  // auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen_ref), -1.0 / 1.5); };
 
 //  using tdigest_t = tdigest<T, counting_allocator<T>>;
 //  tdigest_t* td = new (counting_allocator<tdigest_t>().allocate(1)) tdigest_t(k);
@@ -54,7 +62,7 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
   for (size_t i = 0; i < num_points; ++i) {
     const size_t delta = p - count;
     for (size_t j = 0; j < delta; ++j) {
-      s->update(dist(gen));
+      s->update(sample());
     }
     count += delta;
     #pragma omp critical(memory_usage_stats_update)

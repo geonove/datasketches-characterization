@@ -38,10 +38,10 @@ void tdigest_sketch_accuracy_profile<T>::run_trial(std::vector<T>& values, size_
   // === Sketch: uncomment ONE ===
   // tdigest (k passed from base class, default 200)
   tdigest<T> sketch(k);
-  // req_sketch (HRA, k=12)
-  // req_sketch<T> sketch(12, true);
-  // req_sketch (LRA, k=12)
-  // req_sketch<T> sketch(12, false);
+  // req_sketch (HRA, k=30)
+  // req_sketch<T> sketch(30, true);
+  // req_sketch (LRA, k=30)
+  // req_sketch<T> sketch(30, false);
   // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
   // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
