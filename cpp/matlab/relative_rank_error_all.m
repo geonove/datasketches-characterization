@@ -1,5 +1,6 @@
 clf;
 close all;
+graphics_toolkit('gnuplot');
 
 output_dir = '../results/rank_accuracy/plots';
 mkdir(output_dir);
@@ -55,7 +56,7 @@ fig_num = 1;
 for r = 1:length(rank_cols)
   col = rank_cols(r);
   for d = 1:length(dist_labels)
-    figure(fig_num);
+    figure(fig_num, 'visible', 'off');
     hold on;
     loglog(clds{d}(:,1), clds{d}(:,col), 'linewidth', 2);
     loglog(chds{d}(:,1), chds{d}(:,col), 'linewidth', 2);
@@ -67,10 +68,12 @@ for r = 1:length(rank_cols)
     xlabel('stream size');
     ylabel('rank error, %');
     grid minor on;
-    legend(legend_entries{:}, 'location', 'northeast');
+    h = legend(legend_entries{:}, 'location', 'northeast');
+    set(h, 'fontsize', 9);
 
-    filename = sprintf('%s/rank_error_%s_rank_%s.png', output_dir, dist_labels{d}, rank_labels{r});
-    print(filename, '-dpng', '-r150');
+    set(gcf, 'PaperPositionMode', 'auto', 'Position', [100 100 800 500]);
+    filename = sprintf('%s/rank_error_%s_rank_%s.tikz', output_dir, dist_labels{d}, rank_labels{r});
+    print(filename, '-dpng');
 
     fig_num = fig_num + 1;
   end
