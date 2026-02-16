@@ -79,9 +79,9 @@ void tdigest_timing_profile<T>::run() {
       // Uniform(0, 1)
       // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(rng); };
       // Exponential(lambda=1.5)
-      auto sample = [&rng]() { static thread_local std::exponential_distribution<T> d(1.5); return d(rng); };
+      // auto sample = [&rng]() { static thread_local std::exponential_distribution<T> d(1.5); return d(rng); };
       // Pareto(alpha=1.5, x_m=1.0)
-      // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(rng), -1.0 / 1.5); };
+      auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(rng), -1.0 / 1.5); };
 
       std::vector<T> values(stream_length);
       #pragma omp for
@@ -91,7 +91,7 @@ void tdigest_timing_profile<T>::run() {
         // === Sketch: uncomment ONE ===
         // tdigest (k passed from above)
         auto start_build(std::chrono::high_resolution_clock::now());
-        tdigest<T> sketch(k);
+        // tdigest<T> sketch(k);
         // req_sketch (HRA, k=30)
         // req_sketch<T> sketch(30, true);
         // req_sketch (LRA, k=30)
@@ -99,7 +99,7 @@ void tdigest_timing_profile<T>::run() {
         // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
         // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
         // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
-        // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
+        DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
         auto finish_build(std::chrono::high_resolution_clock::now());
         build_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_build - start_build).count();
 
@@ -123,7 +123,9 @@ void tdigest_timing_profile<T>::run() {
         get_rank_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_get_rank - start_get_rank).count();
 
         auto start_serialize(std::chrono::high_resolution_clock::now());
-        auto bytes = sketch.serialize();
+        std::ostringstream os;
+        sketch.serialize(os);
+        auto bytes = os.str();
         auto finish_serialize(std::chrono::high_resolution_clock::now());
         serialize_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_serialize - start_serialize).count();
 
@@ -131,10 +133,11 @@ void tdigest_timing_profile<T>::run() {
 
         // Note: deserialize API differs per sketch. Adjust the call below as needed.
         auto start_deserialize(std::chrono::high_resolution_clock::now());
-        auto deserialized = tdigest<T>::deserialize(bytes.data(), bytes.size());
+        // auto deserialized = tdigest<T>::deserialize(bytes.data(), bytes.size());
         // auto deserialized = req_sketch<T>::deserialize(bytes.data(), bytes.size());
-        // auto deserialized = DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>::deserialize(bytes.data(), bytes.size());
-        // auto deserialized = DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>::deserialize(bytes.data(), bytes.size());
+        std::istringstream is(bytes);
+        // auto deserialized = DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>::deserialize(is);
+        auto deserialized = DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>::deserialize(is);
         auto finish_deserialize(std::chrono::high_resolution_clock::now());
         deserialize_sum += std::chrono::duration_cast<std::chrono::nanoseconds>(finish_deserialize - start_deserialize).count();
       }

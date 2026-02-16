@@ -50,7 +50,7 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
   auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen_ref), -1.0 / 1.5); };
 
 
-  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000, 100000000};
+  const std::vector<size_t> points = {1000000000};
 
   // === Sketch: uncomment ONE ===
   // using tdigest_t = tdigest<T, counting_allocator<T>>;
