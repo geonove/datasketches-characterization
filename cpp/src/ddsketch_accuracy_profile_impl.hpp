@@ -61,11 +61,11 @@ void ddsketch_accuracy_profile<T>::run() {
 
       // === Distribution: uncomment ONE ===
       // Uniform(0, 1)
-      auto sample = [&gen]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(gen); };
+      // auto sample = [&gen]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(gen); };
       // Exponential(lambda=1.5)
       // auto sample = [&gen]() { static thread_local std::exponential_distribution<T> d(1.5); return d(gen); };
       // Pareto(alpha=1.5, x_m=1.0)
-      // auto sample = [&gen]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen), -1.0 / 1.5); };
+      auto sample = [&gen]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen), -1.0 / 1.5); };
 
       std::vector<T> values(stream_length);
       for (size_t j = 0; j < stream_length; ++j) {

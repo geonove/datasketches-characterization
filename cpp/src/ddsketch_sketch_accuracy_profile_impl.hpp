@@ -29,11 +29,11 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   // req_sketch (HRA, k=30)
   // req_sketch<T> sketch(30, true);
   // req_sketch (LRA, k=30)
-  req_sketch<T> sketch(30, false);
+  // req_sketch<T> sketch(30, false);
   // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
   // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
-  // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
+  DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);

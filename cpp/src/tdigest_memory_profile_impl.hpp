@@ -45,22 +45,33 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
   // Uniform(0, 1)
   // auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(gen_ref); };
   // Exponential(lambda=1.5)
-  auto sample = [&gen_ref]() { static thread_local std::exponential_distribution<T> d(1.5); return d(gen_ref); };
+  // auto sample = [&gen_ref]() { static thread_local std::exponential_distribution<T> d(1.5); return d(gen_ref); };
   // Pareto(alpha=1.5, x_m=1.0)
-  // auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen_ref), -1.0 / 1.5); };
+  auto sample = [&gen_ref]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(gen_ref), -1.0 / 1.5); };
 
-//  using tdigest_t = tdigest<T, counting_allocator<T>>;
-//  tdigest_t* td = new (counting_allocator<tdigest_t>().allocate(1)) tdigest_t(k);
+
+  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000, 100000000};
+
+  // === Sketch: uncomment ONE ===
+  // using tdigest_t = tdigest<T, counting_allocator<T>>;
+  // tdigest_t* s = new (counting_allocator<tdigest_t>().allocate(1)) tdigest_t(200);
 
   // using req_sketch_t = req_sketch<T, std::less<T>, counting_allocator<T>>;
-  // req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(k);
+  // req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(30, true);
 
-  using ddsketch_t = DDSketch<CollapsingLowestDenseStore<2048, counting_allocator<double>>, LogarithmicMapping>;
+  // using req_sketch_t = req_sketch<T, std::less<T>, counting_allocator<T>>;
+  // req_sketch_t* s = new (counting_allocator<req_sketch_t>().allocate(1)) req_sketch_t(30, false);
+
+
+  // using ddsketch_t = DDSketch<CollapsingLowestDenseStore<2048, counting_allocator<double>>, LogarithmicMapping>;
+  // ddsketch_t* s = new (counting_allocator<ddsketch_t>().allocate(1)) ddsketch_t(0.01);
+
+  using ddsketch_t = DDSketch<CollapsingHighestDenseStore<2048, counting_allocator<double>>, LogarithmicMapping>;
   ddsketch_t* s = new (counting_allocator<ddsketch_t>().allocate(1)) ddsketch_t(0.01);
+
   size_t count = 0;
-  size_t p = 1ULL << lg_min_x;
-  for (size_t i = 0; i < num_points; ++i) {
-    const size_t delta = p - count;
+  for (size_t i = 0; i < points.size(); ++i) {
+    const size_t delta = points[i] - count;
     for (size_t j = 0; j < delta; ++j) {
       s->update(sample());
     }
@@ -69,14 +80,12 @@ void tdigest_memory_profile<T>::run_trial(size_t lg_min_x, size_t num_points, si
     {
       stats[i].update(total_allocated_memory);
     }
-    p = pwr_2_law_next(x_ppo, p);
   }
 
-//  td->~tdigest_t();
-//  counting_allocator<tdigest_t>().deallocate(td, 1);
+  // s->~tdigest_t();
+  // counting_allocator<tdigest_t>().deallocate(s, 1);
   // s->~req_sketch_t();
-  // counting_allocator<ss>().deallocate(s, 1);
-
+  // counting_allocator<req_sketch_t>().deallocate(s, 1);
   s->~ddsketch_t();
   counting_allocator<ddsketch_t>().deallocate(s, 1);
   if (total_allocated_memory != 0) throw std::runtime_error("total_allocated_memory != 0");

@@ -43,12 +43,8 @@ distribution(0.0, 1.0)
 
 template<typename T>
 void tdigest_merge_timing_profile<T>::run() {
-  const size_t lg_min_stream_len(0);
-  const size_t lg_max_stream_len(23);
-  const size_t ppo(16);
-
-  const size_t lg_max_trials(16);
-  const size_t lg_min_trials(6);
+  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000};
+  const size_t num_trials_fixed = 256;
 
   const size_t num_sketches(32);
 
@@ -71,15 +67,15 @@ void tdigest_merge_timing_profile<T>::run() {
 
   std::cout << "Stream\tTrials\tBuild\tUpdate\tMerge\tSize" << std::endl;
 
-  size_t stream_length(1 << lg_min_stream_len);
-  while (stream_length <= (1 << lg_max_stream_len)) {
+  for (size_t pi = 0; pi < points.size(); ++pi) {
+    const size_t stream_length = points[pi];
 
     long long build_sum = 0;
     long long update_sum = 0;
     long long merge_sum = 0;
     size_t size_bytes_sum = 0;
 
-    const size_t num_trials = get_num_trials(stream_length, lg_min_stream_len, lg_max_stream_len, lg_min_trials, lg_max_trials);
+    const size_t num_trials = num_trials_fixed;
     const uint64_t seed_base = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     #pragma omp parallel reduction(+:build_sum, update_sum, merge_sum, size_bytes_sum)
     {
@@ -133,8 +129,6 @@ void tdigest_merge_timing_profile<T>::run() {
         << (double) update_sum / num_trials / stream_length / num_sketches << "\t"
         << (double) merge_sum / num_trials / num_sketches << "\t"
         << (double) size_bytes_sum / num_trials << "\n";
-
-    stream_length = pwr_2_law_next(ppo, stream_length);
   }
 }
 

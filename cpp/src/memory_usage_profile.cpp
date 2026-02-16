@@ -47,24 +47,24 @@ thread_local long long int total_allocated_memory;
  */
 void memory_usage_profile::run() {
   const size_t lg_min_trials = 2;
-  const size_t lg_max_trials = 16;
+  const size_t lg_max_trials = 4;
   const size_t trials_ppo = 4;
   const bool print_intermediate = true; // print intermediate data
 
   const size_t minT = 1 << lg_min_trials;
   const size_t max_trials = 1 << lg_max_trials;
 
+  // Fixed measurement points at powers of 10
+  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000, 100000000};
+  const size_t num_points = points.size();
+  // These are passed to run_trial but ignored when using fixed points
   const size_t lg_min_x = 0;
-  const size_t lg_max_x = 32;
-  const size_t x_ppo = 16;
+  const size_t x_ppo = 0;
 
   const size_t quantiles_k = 10000;
 
-  const size_t num_points = count_points(lg_min_x, lg_max_x, x_ppo);
-  size_t p = 1 << lg_min_x;
   for (size_t i = 0; i < num_points; i++) {
     stats.push_back(kll_sketch<int>(quantiles_k));
-    p = pwr_2_law_next(x_ppo, p);
   }
 
   total_allocated_memory = 0;
@@ -107,23 +107,22 @@ void memory_usage_profile::run() {
 }
 
 void memory_usage_profile::print_stats(size_t lg_min_x, size_t num_points, size_t x_ppo) const {
-  size_t p = 1 << lg_min_x;
+  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
   for (size_t i = 0; i < num_points; i++) {
-    std::cout << p << "\t";
+    std::cout << points[i] << "\t";
     std::cout << stats[i].get_n() << "\t";
     // quantiles
     std::vector<double> quants;
     quants.reserve(FRACT_LEN);
-    for (size_t i = 0; i < FRACT_LEN; i++) {
-      quants.push_back(stats[i].get_quantile(FRACTIONS[i]));
+    for (size_t j = 0; j < FRACT_LEN; j++) {
+      quants.push_back(stats[i].get_quantile(FRACTIONS[j]));
     }
-    for (size_t i = 0; i < FRACT_LEN; i++) {
-      const double quantile = quants[i];
+    for (size_t j = 0; j < FRACT_LEN; j++) {
+      const double quantile = quants[j];
       std::cout << quantile;
-      if (i != FRACT_LEN - 1) std::cout << "\t";
+      if (j != FRACT_LEN - 1) std::cout << "\t";
     }
     std::cout << std::endl;
-    p = pwr_2_law_next(x_ppo, p);
   }
 }
 
