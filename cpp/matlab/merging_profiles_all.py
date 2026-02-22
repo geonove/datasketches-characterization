@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-output_dir = '../results/timing_profiles/plots'
+output_dir = '../results/merge_timing_profile/plots'
 os.makedirs(output_dir, exist_ok=True)
 
-base = '../results/timing_profiles'
+base = '../results/merge_timing_profile'
 
 dists = {
     'uniform': 'Uniform(0,1)',
@@ -24,13 +24,9 @@ sketches = [
 # TSV columns (first row is header):
 # 0=Stream, 1=Trials, 2=Build, 3=Update, 4=Quantile, 5=Rank, 6=Serialize, 7=Deserialize, 8=Size
 metrics = {
-    'construct': ('Sketch creation ns', 2),
-    'update': ('Update (ns/item)', 3),
-    'get_quantile': ('Get Quantile (ns/query)', 4),
-    'get_rank': ('Get Rank (ns/query)', 5),
-    'serialize': ('Serialize (ns)', 6),
-    'deserialize': ('Deserialize (ns)', 7),
-    'size': ('Serialized bytes size', 8)
+
+    'merge': ('Merging (ns)', 4),
+
 }
 
 data = {}
@@ -45,8 +41,8 @@ for metric_key, (metric_title, col) in metrics.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         for fname, label, marker in sketches:
             d = data[dist_key][fname]
-            ax.semilogx(d[:, 0], d[:, col], marker=marker, linestyle='-',
-                         linewidth=2, markersize=8, label=label)
+            ax.loglog(d[:, 0], d[:, col], marker=marker, linestyle='-',
+                        linewidth=2, markersize=8, label=label)
         ax.set_xlabel('Stream size', fontsize=14)
         ax.set_ylabel(metric_title, fontsize=14)
         ax.set_title(f'{metric_title}, {dist_title}', fontsize=14)
@@ -68,20 +64,20 @@ for metric_key, (metric_title, col) in metrics.items():
         ax = axes[d_idx]
         for fname, label, marker in sketches:
             dat = data[dist_key][fname]
-            ax.semilogx(dat[:, 0], dat[:, col], marker=marker, linestyle='-',
-                         linewidth=1.5, markersize=6, label=label)
+            ax.loglog(dat[:, 0], dat[:, col], marker=marker, linestyle='-',
+                        linewidth=1.5, markersize=6, label=label)
         ax.grid(True, which='both', linestyle='--', alpha=0.5)
         ax.tick_params(labelsize=9)
-        ax.set_title(dist_title, fontsize=20, fontweight='bold')
-        ax.set_xlabel('Stream size', fontsize=18)
+        ax.set_title(dist_title, fontsize=24, fontweight='bold')
+        ax.set_xlabel('Stream size', fontsize=20)
         if d_idx == 0:
-            ax.set_ylabel(metric_title, fontsize=18)
+            ax.set_ylabel(metric_title, fontsize=20)
 
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=16,
+    fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=18,
                bbox_to_anchor=(0.5, 0.01))
 
-    fig.suptitle(f'{metric_title}, 256 trials', fontsize=24, fontweight='bold')
+    fig.suptitle(f'{metric_title}, 256 trials', fontsize=28, fontweight='bold')
     fig.tight_layout(rect=[0, 0.08, 1, 0.93])
 
     combined_filename = f'{output_dir}/timing_{metric_key}_combined_1x3.pdf'

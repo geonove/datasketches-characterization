@@ -62,16 +62,16 @@ for d, (dist_key, dist_title) in enumerate(dists.items()):
                      linewidth=1.5, markersize=6, label=label)
     ax.grid(True, which='both', linestyle='--', alpha=0.5)
     ax.tick_params(labelsize=9)
-    ax.set_title(dist_title, fontsize=13, fontweight='bold')
-    ax.set_xlabel('Stream size', fontsize=11)
+    ax.set_title(dist_title, fontsize=20, fontweight='bold')
+    ax.set_xlabel('Stream size', fontsize=18)
     if d == 0:
-        ax.set_ylabel('Memory (KB)', fontsize=11)
+        ax.set_ylabel('Memory (KB)', fontsize=18)
 
 handles, labels = axes[0].get_legend_handles_labels()
-fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=11,
+fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=16,
            bbox_to_anchor=(0.5, 0.01))
 
-fig.suptitle('Memory Footprint (median), 16 trials', fontsize=15, fontweight='bold')
+fig.suptitle('Memory Footprint (median), 16 trials', fontsize=26, fontweight='bold')
 fig.tight_layout(rect=[0, 0.08, 1, 0.93])
 
 combined_filename = f'{output_dir}/memory_combined_1x3.pdf'

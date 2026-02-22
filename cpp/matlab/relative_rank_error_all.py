@@ -47,8 +47,8 @@ for rank_label, col in ranks.items():
             d = data[dist_key][sketch_key]
             ax.loglog(d[:, 0], d[:, col], marker=marker, linestyle='-',
                       linewidth=2, markersize=8, label=sketch_label)
-        ax.set_xlabel('Stream size', fontsize=14)
-        ax.set_ylabel('Rank error, %', fontsize=14)
+        ax.set_xlabel('Stream size', fontsize=20, fontweight='bold')
+        ax.set_ylabel('Rank error, %', fontsize=20, fontweight='bold')
         ax.set_title(f'Rank Error, {dist_title}, rank {rank_label}', fontsize=14)
         ax.legend(fontsize=10)
         ax.grid(True, which='both', linestyle='--', alpha=0.5)
@@ -76,18 +76,18 @@ for r, (rank_label, col) in enumerate(rank_list):
         ax.grid(True, which='both', linestyle='--', alpha=0.5)
         ax.tick_params(labelsize=9)
         if r == 0:
-            ax.set_title(dist_title, fontsize=13, fontweight='bold')
+            ax.set_title(dist_title, fontsize=24, fontweight='bold')
         if d == 0:
-            ax.set_ylabel(f'rank {rank_label}\n\nrank error', fontsize=11)
+            ax.set_ylabel(f'rank {rank_label}\n\nrank error', fontsize=20)
         if r == 2:
-            ax.set_xlabel('Stream size', fontsize=11)
+            ax.set_xlabel('Stream size', fontsize=20)
 
 # Single legend at the bottom
 handles, labels = axes[0][0].get_legend_handles_labels()
-fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=11,
+fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=18,
            bbox_to_anchor=(0.5, 0.01))
 
-fig.suptitle('Relative Rank Error, 1000 trials, 99th percentile', fontsize=15, fontweight='bold')
+fig.suptitle('Relative Rank Error, 1000 trials, 99th percentile', fontsize=28, fontweight='bold')
 fig.tight_layout(rect=[0, 0.05, 1, 0.96])
 
 combined_filename = f'{output_dir}/rank_error_combined_3x3.pdf'

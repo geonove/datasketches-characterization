@@ -74,18 +74,18 @@ for r, (rank_label, col) in enumerate(rank_list):
         ax.grid(True, which='both', linestyle='--', alpha=0.5)
         ax.tick_params(labelsize=9)
         if r == 0:
-            ax.set_title(dist_title, fontsize=13, fontweight='bold')
+            ax.set_title(dist_title, fontsize=24, fontweight='bold')
         if d == 0:
-            ax.set_ylabel(f'rank {rank_label}\n\nQuantile error', fontsize=11)
+            ax.set_ylabel(f'level {rank_label}\n\nQuantile error', fontsize=20)
         if r == 2:
-            ax.set_xlabel('Stream size', fontsize=11)
+            ax.set_xlabel('Stream size', fontsize=20)
 
 # Single legend at the bottom
 handles, labels = axes[0][0].get_legend_handles_labels()
-fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=11,
+fig.legend(handles, labels, loc='lower center', ncol=5, fontsize=18,
            bbox_to_anchor=(0.5, 0.01))
 
-fig.suptitle('Relative Quantile Error, 1000 trials, 99th percentile', fontsize=15, fontweight='bold')
+fig.suptitle('Relative Quantile Error, 1000 trials, 99th percentile', fontsize=28, fontweight='bold')
 fig.tight_layout(rect=[0, 0.05, 1, 0.96])
 
 combined_filename = f'{output_dir}/quantile_error_combined_3x3.pdf'

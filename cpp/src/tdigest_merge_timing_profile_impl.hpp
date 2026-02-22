@@ -50,8 +50,8 @@ void tdigest_merge_timing_profile<T>::run() {
 
   // === Sketch type: uncomment ONE block ===
   // tdigest (k=200)
-  using sketch_t = tdigest<T>;
-  auto make_sketch = []() { return sketch_t(200); };
+  // using sketch_t = tdigest<T>;
+  // auto make_sketch = []() { return sketch_t(200); };
   // req_sketch (HRA, k=30)
   // using sketch_t = req_sketch<T>;
   // auto make_sketch = []() { return sketch_t(30, true); };
@@ -62,8 +62,8 @@ void tdigest_merge_timing_profile<T>::run() {
   // using sketch_t = DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>;
   // auto make_sketch = []() { return sketch_t(0.01); };
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
-  // using sketch_t = DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>;
-  // auto make_sketch = []() { return sketch_t(0.01); };
+  using sketch_t = DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping>;
+  auto make_sketch = []() { return sketch_t(0.01); };
 
   std::cout << "Stream\tTrials\tBuild\tUpdate\tMerge\tSize" << std::endl;
 
@@ -92,6 +92,7 @@ void tdigest_merge_timing_profile<T>::run() {
       std::vector<T> local_values(stream_length);
       #pragma omp for
       for (size_t t = 0; t < num_trials; ++t) {
+
         std::generate(local_values.begin(), local_values.end(), [&] { return sample(); });
 
         auto start_build(std::chrono::high_resolution_clock::now());
