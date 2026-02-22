@@ -53,9 +53,12 @@ void ddsketch_accuracy_profile<T>::run() {
   unsigned stream_length = 1;
 
   for (unsigned i = 0; i < num_steps; ++i) {
+
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel for
     for (unsigned t = 0; t < num_trials; t++) {
+      if (i != num_steps - 1) {
+        continue;}
       std::random_device rd;
       std::mt19937 gen(rd());
 

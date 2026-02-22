@@ -39,22 +39,13 @@ sketches = [
     ('req_lra', 'REQ LRA, k=30', 'v'),
 ]
 
-def get_nearest_power_of_10_indices(n_values):
-    """Return indices of rows closest to each power of 10 within the data range."""
-    min_exp = int(np.ceil(np.log10(max(n_values.min(), 1))))
-    max_exp = int(np.floor(np.log10(n_values.max())))
-    targets = [10**e for e in range(min_exp, max_exp + 1)]
-    indices = [np.argmin(np.abs(n_values - t)) for t in targets]
-    return np.array(indices)
-
 # Individual plots
 for rank_label, col in ranks.items():
     for dist_key, dist_title in dists.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         for sketch_key, sketch_label, marker in sketches:
             d = data[dist_key][sketch_key]
-            idx = get_nearest_power_of_10_indices(d[:, 0])
-            ax.loglog(d[idx, 0], d[idx, col], marker=marker, linestyle='-',
+            ax.loglog(d[:, 0], d[:, col], marker=marker, linestyle='-',
                       linewidth=2, markersize=8, label=sketch_label)
         ax.set_xlabel('Stream size', fontsize=14)
         ax.set_ylabel('Rank error, %', fontsize=14)
@@ -80,15 +71,14 @@ for r, (rank_label, col) in enumerate(rank_list):
         ax = axes[r][d]
         for sketch_key, sketch_label, marker in sketches:
             dat = data[dist_key][sketch_key]
-            idx = get_nearest_power_of_10_indices(dat[:, 0])
-            ax.loglog(dat[idx, 0], dat[idx, col], marker=marker, linestyle='-',
-                      linewidth=1.5, markersize=6, label=sketch_label)
+            ax.loglog(dat[:, 0], dat[:, col] / 100, linestyle='-',
+                      linewidth=1.5, label=sketch_label)
         ax.grid(True, which='both', linestyle='--', alpha=0.5)
         ax.tick_params(labelsize=9)
         if r == 0:
             ax.set_title(dist_title, fontsize=13, fontweight='bold')
         if d == 0:
-            ax.set_ylabel(f'rank {rank_label}\n\nrank error, %', fontsize=11)
+            ax.set_ylabel(f'rank {rank_label}\n\nrank error', fontsize=11)
         if r == 2:
             ax.set_xlabel('Stream size', fontsize=11)
 

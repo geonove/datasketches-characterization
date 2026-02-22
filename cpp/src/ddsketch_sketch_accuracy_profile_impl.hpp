@@ -35,8 +35,8 @@ void ddsketch_sketch_accuracy_profile<T>::run_trial(
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
   DDSketch<CollapsingHighestDenseStore<2048, std::allocator<T>>, LogarithmicMapping> sketch(0.01);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
-
   std::sort(values.begin(), values.begin() + stream_length);
+  std::cout << values.back() << std::endl;
 
   for (size_t j = 0; j < ranks.size(); ++j) {
     const double rank = ranks[j];

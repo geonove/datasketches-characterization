@@ -37,22 +37,22 @@ void tdigest_sketch_accuracy_profile<T>::run_trial(std::vector<T>& values, size_
 
   // === Sketch: uncomment ONE ===
   // tdigest (k passed from base class, default 200)
-  tdigest<T> sketch(k);
+  // tdigest<T> sketch(k);
   // req_sketch (HRA, k=30)
   // req_sketch<T> sketch(30, true);
   // req_sketch (LRA, k=30)
-  // req_sketch<T> sketch(30, false);
+  req_sketch<T> sketch(30, false);
   // DDSketch (Collapsing Lowest Dense Store, alpha=0.01)
-  // DDSketch<CollapsingLowestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
+  // DDSketch<CollapsingLowestDenseStore<8192, std::allocator<double>>, LogarithmicMapping> sketch(0.0001);
   // DDSketch (Collapsing Highest Dense Store, alpha=0.01)
-  // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.01);
+  // DDSketch<CollapsingHighestDenseStore<2048, std::allocator<double>>, LogarithmicMapping> sketch(0.0001);
   for (size_t i = 0; i < stream_length; ++i) sketch.update(values[i]);
 
   std::sort(values.begin(), values.begin() + stream_length);
   unsigned j = 0;
   for (const double rank: ranks) {
     const T quantile = get_quantile(values, stream_length, rank);
-    const double true_rank = get_rank(values, stream_length, quantile, MIDPOINT);
+    const double true_rank = get_rank(values, stream_length, quantile, INCLUSIVE);
     rank_errors[j++][t] = (std::abs(sketch.get_rank(quantile) - true_rank));
   }
 }

@@ -43,7 +43,7 @@ distribution(0.0, 1.0)
 
 template<typename T>
 void tdigest_merge_timing_profile<T>::run() {
-  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000};
+  const std::vector<size_t> points = {1000, 10000, 100000, 1000000, 10000000, 100000000};
   const size_t num_trials_fixed = 256;
 
   const size_t num_sketches(32);
@@ -85,9 +85,9 @@ void tdigest_merge_timing_profile<T>::run() {
       // Uniform(0, 1)
       // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return d(rng); };
       // Exponential(lambda=1.5)
-      auto sample = [&rng]() { static thread_local std::exponential_distribution<T> d(1.5); return d(rng); };
+      // auto sample = [&rng]() { static thread_local std::exponential_distribution<T> d(1.5); return d(rng); };
       // Pareto(alpha=1.5, x_m=1.0)
-      // auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(rng), -1.0 / 1.5); };
+      auto sample = [&rng]() { static thread_local std::uniform_real_distribution<T> d(0.0, 1.0); return std::pow(d(rng), -1.0 / 1.5); };
 
       std::vector<T> local_values(stream_length);
       #pragma omp for

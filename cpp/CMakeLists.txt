@@ -24,8 +24,8 @@ target_include_directories(characterization PUBLIC ${DATASKETCHES_INCLUDE_DIR})
 find_package(OpenMP REQUIRED)
 
 target_compile_options(characterization PRIVATE
-  -O3
-  -DNDEBUG
+#  -O3
+#  -DNDEBUG
 )
 target_link_libraries(characterization PRIVATE OpenMP::OpenMP_CXX)
 

@@ -77,7 +77,7 @@ void req_error_vs_rank_profile<T>::run() {
       for (size_t i = 0; i < plot_points; ++i) {
         const T quantile = get_quantile(values, values.size(), plot_ranks[i]);
         //      const double true_rank = get_rank(values, values.size(), quantile, INCLUSIVE);
-        const double true_rank = get_rank(values, values.size(), quantile, MIDPOINT);
+        const double true_rank = get_rank(values, values.size(), quantile, INCLUSIVE);
         local_error_distributions[i].update(sketch.get_rank(quantile) - true_rank);
       }
     }
