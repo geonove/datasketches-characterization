@@ -52,8 +52,14 @@ target_sources(characterization
     src/cpc_union_timing_profile.hpp
     src/ddsketch_accuracy_profile.hpp
     src/ddsketch_accuracy_profile_impl.hpp
+    src/ddsketch_memory_profile.hpp
+    src/ddsketch_memory_profile_impl.hpp
+    src/ddsketch_merge_timing_profile.hpp
+    src/ddsketch_merge_timing_profile_impl.hpp
     src/ddsketch_sketch_accuracy_profile.hpp
     src/ddsketch_sketch_accuracy_profile_impl.hpp
+    src/ddsketch_timing_profile.hpp
+    src/ddsketch_timing_profile_impl.hpp
     src/distinct_count_accuracy_profile.cpp
     src/distinct_count_accuracy_profile.hpp
     src/frequent_items_merge_timing_profile.cpp

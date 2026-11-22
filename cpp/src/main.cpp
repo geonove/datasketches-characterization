@@ -61,7 +61,10 @@
 #include "tdigest_memory_profile.hpp"
 
 #include "cpc_sketch_memory_profile.hpp"
+#include "ddsketch_memory_profile.hpp"
+#include "ddsketch_merge_timing_profile.hpp"
 #include "ddsketch_sketch_accuracy_profile.hpp"
+#include "ddsketch_timing_profile.hpp"
 #include "hll_sketch_memory_profile.hpp"
 #include "theta_sketch_memory_profile.hpp"
 #include "kll_sketch_memory_profile.hpp"
@@ -126,6 +129,9 @@ int main(int argc, char **argv) {
   job_profile::add("hll-cross-lang", job_profile_ptr(new hll_cross_language_profile()));
 
   job_profile::add("ddsketch-quantile-accuracy-profile", job_profile_ptr(new ddsketch_sketch_accuracy_profile<double>()));
+  job_profile::add("ddsketch-timing-double", job_profile_ptr(new ddsketch_timing_profile<double>()));
+  job_profile::add("ddsketch-merge-timing-double", job_profile_ptr(new ddsketch_merge_timing_profile<double>()));
+  job_profile::add("ddsketch-memory-double", job_profile_ptr(new ddsketch_memory_profile<double>()));
 
   job_profile::add("cms-point-query", job_profile_ptr(new cms_point_query_profile()));
 
