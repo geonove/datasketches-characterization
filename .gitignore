@@ -76,3 +76,6 @@ cpp/Default/
 **/_*/
 results/
 doc/
+
+#Octave
+octave-workspace
