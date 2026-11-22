@@ -57,14 +57,21 @@ void tdigest_accuracy_profile<T>::run() {
     #pragma omp parallel for
     for (unsigned t = 0; t < num_trials; t++) {
       std::random_device rd;
-      std::mt19937 gen( rd());
-      //  std::uniform_real_distribution<T> dist(0, 1.0);
+      std::mt19937 gen(rd());
+
+      // === Distribution: uncomment ONE ===
+      // Uniform(0, 1)
+      // std::uniform_real_distribution<T> dist(0, 1.0);
+      // auto sample = [&] { return dist(gen); };
+      // Exponential(lambda=1.5)
       std::exponential_distribution<T> dist(1.5);
+      auto sample = [&] { return dist(gen); };
+      // Pareto(alpha=1.5, x_m=1)
+      // std::uniform_real_distribution<T> dist(0, 1.0);
+      // auto sample = [&] { return std::pow(1.0 - dist(gen), -1.0 / 1.5); };
 
       std::vector<T> values(stream_length);
-      for (size_t j = 0; j < stream_length; ++j) {
-        values[j] = dist(gen);
-      }
+      for (size_t j = 0; j < stream_length; ++j) values[j] = sample();
       run_trial(values, stream_length, compression, ranks, rank_errors, t);
     }
 
